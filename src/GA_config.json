@@ -1,0 +1,7 @@
+{
+    "n_runs": 10,
+    "cx_prob": 0.9,
+    "mu_prob": 0.05,
+    "n_generation": 500,
+    "pop_size": 100
+}
