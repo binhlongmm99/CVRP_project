@@ -1,4 +1,4 @@
-import CVRP
+from CVRP import CVRP
 
 def calculate_distance(customer1, customer2):
     # Calculate distance between customer1 and customer 2 given their
@@ -28,3 +28,12 @@ def read_input(file_name):
 
         instance = CVRP()
         return instance
+
+
+if __name__ == "__main__":
+    # Test parts
+    cvpr = CVRP.init_from_file("data/A/A-n32-k5.vrp")
+
+    # can install `rich` library for pretty print
+    print(cvpr.__dict__)
+    

@@ -1,17 +1,108 @@
-import os
 import io
+import os
+import re
 from json import load
 
 class CVRP():
-    def __init__(self) -> None:
-        self.instance_name = None
-        self.number_of_customers = 0
-        self.vehicle_capacity = 0
-        self.distance_matrix = []
-        self.customers = []
 
+    def __init__(self, 
+        instance_name: str, 
+        number_of_customers: int, 
+        vehicle_capacity: int, 
+        distance_matrix: list, 
+        customers: list
+    ):
+        self.instance_name = instance_name
+        self.number_of_customers = number_of_customers
+        self.vehicle_capacity = vehicle_capacity
+        self.distance_matrix = distance_matrix
+        self.customers = customers
+        
+    @classmethod
+    def init_from_file(cls, file_name):
+        """
+            Parse the input text file and return a new CVPR instance initialized with the parsed values
+            
+            Input:
+            -----
+            file_name: the input file path
+            
+            Output:
+            ------
+            cvpr: new CVPR instance
+            
+            Content Format for the input file:
+            ---------------------------------
+            NAME : A-n32-k5
+            COMMENT : (Augerat et al, No of trucks: 5, Optimal value: 784)
+            TYPE : CVRP
+            DIMENSION : 32
+            EDGE_WEIGHT_TYPE : EUC_2D 
+            CAPACITY : 100
+            NODE_COORD_SECTION
+             1 82 76
+             2 96 44
+            ...
+            DEMAND_SECTION
+             1 0 
+             2 19 
+            ...
+            DEPOT_SECTION
+            ...
+            EOF
+        """
+        content = open(file_name).read().replace("\n", "|")
+        # comment   = re.search("COMMENT\s*:\s+(.*?)\|", content).group(1)
+        # type_     = re.search("TYPE\s*:\s+(.*?)\|", content).group(1)
+        # dimension = re.search("DIMENSION\s+:\s+(.*?)\|", content).group(1)
+        # ew_type   = re.search("EDGE_WEIGHT_TYPE\s+:\s+(.*?)\|", content).group(1)
+        name      = re.search("NAME\s*:\s+(.*?)\|", content).group(1)
+        capacity  = re.search("CAPACITY\s+:\s+(.*?)\|", content).group(1)
+        coords    = re.search("NODE_COORD_SECTION(.*)DEMAND_SECTION", content).group(1)
+        coords    = [x.strip().split() for x in coords.split("|") if x.strip()]
+        demands   = re.search("DEMAND_SECTION(.*)DEPOT_SECTION", content).group(1)
+        demands   = [x.strip().split() for x in demands.split("|") if x.strip()]
+        customers = {}
+        customers["depart"] = {
+            "coordinates": {
+                "x": float(coords[0][1]),
+                "y": float(coords[0][2])
+            },
+            "demand": float(demands[0][1])
+        }
+        for coord, demand in zip(coords[1:], demands[1:]):
+            # assert the coordinate and the demand have the same id
+            assert int(coord[0]) == int(demand[0])
+            customers[f"customer_{int(coord[0])-1}"] = {
+                "coordinates": {
+                    "x": float(coord[1]),
+                    "y": float(coord[2])
+                },
+                "demand": float(demand[1])
+            }
+        distance_matrix = [
+            calculate_distance(customers[c1], customers[c2]) for c1 in customers.keys() for c2 in customers.keys()
+        ]
+        return cls(
+            instance_name=name,
+            number_of_customers=len(customers)-1,
+            vehicle_capacity=capacity,
+            distance_matrix=distance_matrix,
+            customers=customers
+        )
+            
 
-
+def calculate_distance(customer1, customer2):
+    # Calculate distance between customer1 and customer 2 given their
+    # Euclidean coordinates
+    # Returns euclidean distance
+    """
+    Inputs: customer1 from json object, customer2 from json object
+    Outputs: Returns Euclidian distance between these customer locations.
+    """
+    return ((customer1['coordinates']['x'] - customer2['coordinates']['x']) ** 2 + \
+            (customer1['coordinates']['y'] - customer2['coordinates']['y']) ** 2) ** 0.5
+        
 
 # Load the given problem, which can be a json file
 def load_instance(json_file):
@@ -149,3 +240,11 @@ def eval_indvidual_fitness(individual, instance, unit_cost):
     route_cost = getRouteCost(individual, instance, unit_cost)
 
     return (vehicles, route_cost)
+
+
+if __name__ == "__main__":
+    # Test parts
+    cvpr = CVRP.init_from_file("data/A/A-n32-k5.vrp")
+
+    # can install `rich` library for pretty print
+    print(cvpr.__dict__)
