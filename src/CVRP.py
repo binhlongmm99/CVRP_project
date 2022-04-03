@@ -1,7 +1,4 @@
-import io
-import os
 import re
-from json import load
 
 class CVRP():
 
@@ -10,7 +7,7 @@ class CVRP():
         number_of_customers: int, 
         vehicle_capacity: int, 
         distance_matrix: list, 
-        customers: list
+        customers: dict
     ):
         self.instance_name = instance_name
         self.number_of_customers = number_of_customers
@@ -81,12 +78,14 @@ class CVRP():
                 "demand": float(demand[1])
             }
         distance_matrix = [
-            calculate_distance(customers[c1], customers[c2]) for c1 in customers.keys() for c2 in customers.keys()
+            [calculate_distance(customers[c1], customers[c2]) for c1 in customers.keys()] 
+                                                                    for c2 in customers.keys()
         ]
+
         return cls(
             instance_name=name,
             number_of_customers=len(customers)-1,
-            vehicle_capacity=capacity,
+            vehicle_capacity=int(capacity),
             distance_matrix=distance_matrix,
             customers=customers
         )
@@ -104,17 +103,6 @@ def calculate_distance(customer1, customer2):
             (customer1['coordinates']['y'] - customer2['coordinates']['y']) ** 2) ** 0.5
         
 
-# Load the given problem, which can be a json file
-def load_instance(json_file):
-    """
-    Inputs: path to json file
-    Outputs: json file object if it exists, or else returns NoneType
-    """
-    if os.path.exists(path=json_file):
-        with io.open(json_file, 'rt', newline='') as file_object:
-            return load(file_object)
-    return None
-
 
 # Take a route of given length, divide it into subroute 
 # where each subroute is assigned to vehicle
@@ -129,11 +117,11 @@ def routeToSubroute(individual, instance):
     sub_route = []
     vehicle_load = 0
     last_customer_id = 0
-    vehicle_capacity = instance['vehicle_capacity']
+    vehicle_capacity = instance.vehicle_capacity
     
     for customer_id in individual:
         # print(customer_id)
-        demand = instance[f"customer_{customer_id}"]["demand"]
+        demand = instance.customers[f"customer_{customer_id}"]["demand"]
         # print(f"The demand for customer_{customer_id}  is {demand}")
         updated_vehicle_load = vehicle_load + demand
 
@@ -165,7 +153,7 @@ def printRoute(route, merge=False):
             route_str = f'{route_str} - {customer_id}'
         sub_route_str = f'{sub_route_str} - 0'
         if not merge:
-            print(f'  Vehicle {sub_route_count}\'s route: {sub_route_str}')
+            print(f'  Route #{sub_route_count}: {sub_route_str}')
         route_str = f'{route_str} - 0'
     if merge:
         print(route_str)
@@ -205,14 +193,14 @@ def getRouteCost(individual, instance, unit_cost=1):
 
         for customer_id in sub_route:
             # Distance from the last customer id to next one in the given subroute
-            distance = instance["distance_matrix"][last_customer_id][customer_id]
+            distance = instance.distance_matrix[last_customer_id][customer_id]
             sub_route_distance += distance
             # Update last_customer_id to the new one
             last_customer_id = customer_id
         
         # After adding distances in subroute, adding the route cost from last customer to depot
         # that is 0
-        sub_route_distance = sub_route_distance + instance["distance_matrix"][last_customer_id][0]
+        sub_route_distance = sub_route_distance + instance.distance_matrix[last_customer_id][0]
 
         # Cost for this particular sub route
         sub_route_transport_cost = unit_cost*sub_route_distance
@@ -239,7 +227,9 @@ def eval_indvidual_fitness(individual, instance, unit_cost):
     # we also have to minimize route cost for all the vehicles
     route_cost = getRouteCost(individual, instance, unit_cost)
 
-    return (vehicles, route_cost)
+    return route_cost,
+    # return (vehicles, route_cost)
+
 
 
 if __name__ == "__main__":
