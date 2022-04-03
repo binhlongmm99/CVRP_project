@@ -1,7 +1,16 @@
 {
-    "n_runs": 10,
-    "cx_prob": 0.9,
-    "mu_prob": 0.05,
+    "input_data": {
+        "input_path": "../data/",
+        "set": [
+            "A", "B", "E",
+            "Vrp-Set-Golden", "Vrp-Set-Li",
+            "Vrp-Set-XXL"
+        ]
+    },
+    "output_data": "../data/results/",
+    "n_runs": 1,
+    "cx_prob": 0.8,
+    "mu_prob": 0.02,
     "n_generation": 500,
     "pop_size": 100
 }
