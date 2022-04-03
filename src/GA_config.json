@@ -7,7 +7,7 @@
             "Vrp-Set-XXL"
         ]
     },
-    "output_data": "../data/results/",
+    "output_data": "../results/",
     "n_runs": 1,
     "cx_prob": 0.8,
     "mu_prob": 0.02,
