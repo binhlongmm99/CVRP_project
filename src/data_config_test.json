@@ -2,19 +2,13 @@
     "A": [
         "A-n32-k5.vrp"
     ],
-    "B": [
+
+    "CMT": [
 
     ],
-    "E": [
 
-    ],
-    "Vrp-Set-Golden": [
-
-    ],
-    "Vrp-Set-Li": [
-
-    ],
-    "Vrp-Set-XXL": [
+    "Golden": [
 
     ]
+
 }

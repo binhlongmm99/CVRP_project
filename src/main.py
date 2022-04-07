@@ -1,7 +1,8 @@
 import json
 from GA import GA
 
-DATA_PATH = ".\data_config_test.json"
+DATA_PATH = ".\data_config.json"
+# DATA_PATH = ".\data_config_test.json"
 GA_PATH = ".\GA_config.json"
 
 def main():

@@ -23,9 +23,9 @@ class GA():
             input_path = self.GA_config["input_data"]["input_path"] + input_set + "/"
             for i in range(len(self.data_config[input_set])):
                 fileName = self.data_config[input_set][i] 
-                self.json_instance = CVRP.CVRP.init_from_file(input_path + fileName)
+                self.instance = CVRP.CVRP.init_from_file(input_path + fileName)
                 # print(self.json_instance.__dict__)
-                self.ind_size = self.json_instance.number_of_customers
+                self.ind_size = self.instance.number_of_customers
 
                 for j in range(self.GA_config["n_runs"]):
                     print("------------------------------------------------------------------");
@@ -36,7 +36,7 @@ class GA():
                     self.generatingPopFitness()
                     self.runGenerations()
                     self.getBestInd()
-                    self.doExport()
+                    self.doExport(j, input_set)
 
     def createCreators(self):
         creator.create('FitnessMin', base.Fitness, weights=(-1.0, ))
@@ -50,18 +50,17 @@ class GA():
         self.toolbox.register('population', tools.initRepeat, list, self.toolbox.individual)
 
         # Creating evaluate function using custom fitness
-        self.toolbox.register('evaluate', CVRP.eval_indvidual_fitness, instance=self.json_instance, unit_cost=1)
-        # self.toolbox.register('evaluate', CVRP.eval_indvidual_fitness[1], instance=self.json_instance, unit_cost=1)
-
+        self.toolbox.register('evaluate', CVRP.eval_indvidual_fitness, instance=self.instance, unit_cost=1)
 
         # Selection method
-        self.toolbox.register("select", tools.selTournament, tournsize=3)
+        self.toolbox.register("select", tools.selTournament, tournsize=5)
 
         # Crossover method
-        self.toolbox.register("mate", cxOrderedVrp)
+        # self.toolbox.register("mate", cxOrderedCVRP)
+        self.toolbox.register("mate", cxPartialyMatched)
 
         # Mutation method
-        self.toolbox.register("mutate", mutationShuffle, indpb=self.mu_prob)
+        self.toolbox.register("mutate", mutationCVRP, indpb=self.mu_prob)
 
 
     def generatingPopFitness(self):
@@ -77,23 +76,22 @@ class GA():
     def runGenerations(self):
         # Running algorithm for given number of generations
         for gen in range(self.n_generation):
-            if gen % 50 == 0:
-                print(f"{20*'#'} Currently Evaluating {gen} Generation {20*'#'}")
+            # if gen % 50 == 0:
+            #     print(f"{20*'#'} Currently Evaluating {gen} Generation {20*'#'}")
 
             # Selecting individuals
-            # Selecting offsprings from the population, about 1/2 of them
+            # Selecting offsprings from the population
             self.offspring = self.toolbox.select(self.pop, len(self.pop))
 
             self.offspring = [self.toolbox.clone(ind) for ind in self.offspring]
 
-            # Performing , crossover and mutation operations according to their probabilities
+            # Performing crossover and mutation operations according to their probabilities
             for ind1, ind2 in zip(self.offspring[::2], self.offspring[1::2]):
                 if random.random() <= self.cx_prob:
-                    # print("Mating happened")
                     self.toolbox.mate(ind1, ind2)
 
                     # If cross over happened to the individuals then we are deleting those individual
-                    #   fitness values, This operations are being done on the offspring population.
+                    # fitness values, This operations are being done on the offspring population.
                     del ind1.fitness.values, ind2.fitness.values
                 self.toolbox.mutate(ind1)
                 self.toolbox.mutate(ind2)
@@ -109,7 +107,8 @@ class GA():
             self.pop = self.toolbox.select(self.pop + self.offspring, self.pop_size)
 
             # Recording stats in this generation
-            recordStat(self.invalid_ind, self.logbook, self.pop, self.stats, gen + 1)
+            if gen % 100 == 0:
+                recordStat(self.invalid_ind, self.logbook, self.pop, self.stats, gen + 1)
 
         print(f"{20 * '#'} End of Generations {20 * '#'} ")
 
@@ -119,33 +118,22 @@ class GA():
 
         # Printing the best after all generations
         print(f"Best individual is {self.best_individual}")
-        # print(f"Number of vechicles required are "
-        #       f"{self.best_individual.fitness.values[0]}")
-        # print(f"Cost required for the transportation is "
-        #       f"{self.best_individual.fitness.values[1]}")
 
         # Printing the route from the best individual
-        CVRP.printRoute(CVRP.routeToSubroute(self.best_individual, self.json_instance))
+        CVRP.printRoute(CVRP.routeToSubroute(self.best_individual, self.instance))
         print(f"Cost "f"{self.best_individual.fitness.values[0]}")
 
-    def doExport(self):
-        csv_file_name = f"{self.json_instance.instance_name}_" \
+    def doExport(self, seed, input_set):
+        csv_file_name = f"{self.instance.instance_name}_" \
                         f"pop{self.pop_size}_crossProb{self.cx_prob}" \
-                        f"_mutProb{self.mu_prob}_numGen{self.n_generation}.csv"
-        csv_path = self.GA_config["output_data"]
+                        f"_mutProb{self.mu_prob}_numGen{self.n_generation}" \
+                        f"_seed{seed}.csv"
+        csv_path = self.GA_config["output_data"] + input_set + "/" + self.instance.instance_name + "/"
         utils.exportCsv(csv_file_name, csv_path, self.logbook)
 
 
-# Crossover method with ordering
-# This method will let us escape illegal routes with multiple occurences
-# of customers that might happen. We would never get illegal individual from this
-# crossOver
-def cxOrderedVrp(input_ind1, input_ind2):
-    # Modifying this to suit our needs
-    #  If the sequence does not contain 0, this throws error
-    #  So we will modify inputs here itself and then 
-    #       modify the outputs too
-
+# Order Crossover
+def cxOrderedCVRP(input_ind1, input_ind2):
     ind1 = [x-1 for x in input_ind1]
     ind2 = [x-1 for x in input_ind2]
     size = min(len(ind1), len(ind2))
@@ -181,27 +169,65 @@ def cxOrderedVrp(input_ind1, input_ind2):
     ind2 = [x+1 for x in ind2]
     return ind1, ind2
 
+# Partially Mapped Crossover
+def cxPartialyMatched(input_ind1, input_ind2):
+    ind1 = [x-1 for x in input_ind1]
+    ind2 = [x-1 for x in input_ind2]
+    size = min(len(ind1), len(ind2))
+    p1, p2 = [0] * size, [0] * size
 
-def mutationShuffle(individual, indpb):
+    # Initialize the position of each indices in the individuals
+    for i in range(size):
+        p1[ind1[i]] = i
+        p2[ind2[i]] = i
+    # Choose crossover points
+    cxpoint1 = random.randint(0, size)
+    cxpoint2 = random.randint(0, size - 1)
+    if cxpoint2 >= cxpoint1:
+        cxpoint2 += 1
+    else:  # Swap the two cx points
+        cxpoint1, cxpoint2 = cxpoint2, cxpoint1
+
+    # Apply crossover between cx points
+    for i in range(cxpoint1, cxpoint2):
+        # Keep track of the selected values
+        temp1 = ind1[i]
+        temp2 = ind2[i]
+        # Swap the matched value
+        ind1[i], ind1[p1[temp2]] = temp2, temp1
+        ind2[i], ind2[p2[temp1]] = temp1, temp2
+        # Position bookkeeping
+        p1[temp1], p1[temp2] = p1[temp2], p1[temp1]
+        p2[temp1], p2[temp2] = p2[temp2], p2[temp1]
+    
+    # Finally adding 1 again to reclaim original input
+    ind1 = [x+1 for x in ind1]
+    ind2 = [x+1 for x in ind2]
+    return ind1, ind2
+
+def mutationCVRP(individual, indpb):
     """
     Inputs : Individual route
              Probability of mutation betwen (0,1)
     Outputs : Mutated individual according to the probability
     """
     size = len(individual)
-    for i in range(size):
-        if random.random() < indpb:
-            swap_indx = random.randint(0, size - 2)
-            if swap_indx >= i:
-                swap_indx += 1
-            individual[i], individual[swap_indx] = \
-                individual[swap_indx], individual[i]
-
+    if random.random() < indpb:
+        indx_1 = random.randint(0, size - 1)
+        indx_2 = random.randint(0, size - 1)
+        while indx_1 == indx_2:
+            indx_2 = random.randint(0, size - 1)
+        if random.random() <= 0.5:
+            individual[indx_1], individual[indx_2] = \
+                individual[indx_2], individual[indx_1]
+        else: 
+            min_indx = min(indx_1, indx_2)
+            max_indx = max(indx_1, indx_2)
+            individual[min_indx:max_indx] = individual[min_indx:max_indx][::-1]
     return individual
 
 
 ## Statistics and Logging
-
 def createStatsObjs():
     # Method to create stats and logbook objects
     """
