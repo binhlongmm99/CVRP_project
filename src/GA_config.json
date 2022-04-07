@@ -8,9 +8,9 @@
         ]
     },
     "output_data": "../results/",
-    "n_runs": 1,
+    "n_runs": 10,
     "cx_prob": 0.8,
     "mu_prob": 0.1,
-    "n_generation": 2500,
+    "n_generation": 5000,
     "pop_size": 200
 }

@@ -53,7 +53,7 @@ class GA():
         self.toolbox.register('evaluate', CVRP.eval_indvidual_fitness, instance=self.instance, unit_cost=1)
 
         # Selection method
-        self.toolbox.register("select", tools.selTournament, tournsize=5)
+        self.toolbox.register("select", tools.selTournament, tournsize=3)
 
         # Crossover method
         # self.toolbox.register("mate", cxOrderedCVRP)
@@ -74,6 +74,9 @@ class GA():
 
 
     def runGenerations(self):
+        count = 0
+        best_cost = tools.selBest(self.pop, 1)[0].fitness.values[0]
+
         # Running algorithm for given number of generations
         for gen in range(self.n_generation):
             # if gen % 50 == 0:
@@ -109,6 +112,14 @@ class GA():
             # Recording stats in this generation
             if gen % 100 == 0:
                 recordStat(self.invalid_ind, self.logbook, self.pop, self.stats, gen + 1)
+            
+            if (tools.selBest(self.pop, 1)[0].fitness.values[0] == best_cost):
+                count += 1
+            else: 
+                best_cost = tools.selBest(self.pop, 1)[0].fitness.values[0]
+                count = 0
+            if count == 500:
+                break
 
         print(f"{20 * '#'} End of Generations {20 * '#'} ")
 
