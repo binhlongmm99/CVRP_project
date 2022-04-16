@@ -1,0 +1,31 @@
+{
+    "input_result": {
+        "input_path": "./results/",
+        "set": [
+            "A",
+            "CMT",
+            "Golden"
+        ]
+    },
+    "instance": {
+        "A": [
+            "A-n33-k5.vrp"
+        ],
+
+        "CMT": [
+
+        ],
+        "Golden": [
+
+        ]
+    },
+
+    "output_result": {
+        "output_path": "./figures/",
+        "type": [
+            "convergence/",
+            "solution/"
+        ]
+    }
+
+}
