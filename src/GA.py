@@ -15,7 +15,6 @@ class GA():
         self.mu_prob = self.GA_config["mu_prob"]
         self.n_generation = self.GA_config["n_generation"]
 
-        self.toolbox = base.Toolbox()
 
     def runMain(self):
         for input_set in self.GA_config["input_data"]["set"]:
@@ -31,12 +30,15 @@ class GA():
                     random.seed(j)
                     np.random.seed(j)
 
+                    self.toolbox = base.Toolbox()
                     self.logbook, self.stats = createStatsObjs()
                     self.createCreators()
                     self.generatingPopFitness()
                     self.runGenerations()
                     self.getBestInd()
                     self.doExport(j, input_set)
+                    del creator.FitnessMin
+                    del creator.Individual
 
     def createCreators(self):
         creator.create('FitnessMin', base.Fitness, weights=(-1.0, ))
