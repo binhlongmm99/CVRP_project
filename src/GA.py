@@ -16,7 +16,6 @@ class GA():
         self.n_generation = self.GA_config["n_generation"]
 
         self.toolbox = base.Toolbox()
-        self.logbook, self.stats = createStatsObjs()
 
     def runMain(self):
         for input_set in self.GA_config["input_data"]["set"]:
@@ -32,6 +31,7 @@ class GA():
                     random.seed(j)
                     np.random.seed(j)
 
+                    self.logbook, self.stats = createStatsObjs()
                     self.createCreators()
                     self.generatingPopFitness()
                     self.runGenerations()
@@ -110,8 +110,7 @@ class GA():
             self.pop = self.toolbox.select(self.pop + self.offspring, self.pop_size)
 
             # Recording stats in this generation
-            if gen % 100 == 0:
-                recordStat(self.invalid_ind, self.logbook, self.pop, self.stats, gen + 1)
+            recordStat(self.invalid_ind, self.logbook, self.pop, self.stats, gen + 1)
             
             if (tools.selBest(self.pop, 1)[0].fitness.values[0] == best_cost):
                 count += 1
@@ -253,7 +252,6 @@ def createStatsObjs():
 
     # Methods for logging
     logbook = tools.Logbook()
-    # logbook.header = "Generation", "evals", "avg", "std", "min", "max", "best_one", "fitness_best_one"
     logbook.header = "Generation", "avg", "std", "min", "max", "best_one", "fitness_best_one"
 
     return logbook, stats
@@ -271,9 +269,5 @@ def recordStat(invalid_ind, logbook, pop, stats, gen):
     best_individual = tools.selBest(pop, 1)[0]
     record["best_one"] = best_individual
     record["fitness_best_one"] = best_individual.fitness
-    logbook.record(Generation=gen, evals=len(invalid_ind), **record)
+    logbook.record(Generation=gen, **record)
     print(logbook.stream)
-
-
-
-
