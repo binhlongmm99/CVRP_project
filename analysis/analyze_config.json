@@ -1,0 +1,53 @@
+{
+    "input_result": {
+        "input_path": "../results/result_GA/19-4-2022/",
+        "set": [
+            "A",
+            "CMT",
+            "Golden"
+        ]
+    },
+    "instance": {
+        "A": [
+            "A-n32-k5.vrp", "A-n33-k5.vrp",
+            "A-n33-k6.vrp", "A-n34-k5.vrp",
+            "A-n36-k5.vrp", "A-n37-k5.vrp",
+            "A-n37-k6.vrp", "A-n38-k5.vrp",
+            "A-n39-k5.vrp", "A-n39-k6.vrp",
+            "A-n44-k6.vrp", "A-n45-k6.vrp",
+            "A-n45-k7.vrp", "A-n46-k7.vrp",
+            "A-n48-k7.vrp", "A-n53-k7.vrp",
+            "A-n54-k7.vrp", "A-n55-k9.vrp",
+            "A-n60-k9.vrp", "A-n61-k9.vrp",
+            "A-n62-k8.vrp", "A-n63-k10.vrp",
+            "A-n63-k9.vrp", "A-n64-k9.vrp",
+            "A-n65-k9.vrp", "A-n69-k9.vrp",
+            "A-n80-k10.vrp"
+        ],
+
+        "CMT": [
+            "CMT1.vrp", "CMT2.vrp",
+            "CMT3.vrp", "CMT4.vrp",
+            "CMT5.vrp", "CMT6.vrp",
+            "CMT7.vrp", "CMT8.vrp",
+            "CMT9.vrp", "CMT10.vrp",
+            "CMT11.vrp", "CMT12.vrp",
+            "CMT13.vrp", "CMT14.vrp"
+        ],
+        "Golden": [
+            "Golden_1.vrp", "Golden_2.vrp",
+            "Golden_3.vrp", "Golden_4.vrp",
+            "Golden_5.vrp", "Golden_6.vrp",
+            "Golden_7.vrp", "Golden_8.vrp",
+            "Golden_9.vrp", "Golden_10.vrp",
+            "Golden_11.vrp", "Golden_12.vrp",
+            "Golden_13.vrp", "Golden_14.vrp",
+            "Golden_15.vrp", "Golden_16.vrp",
+            "Golden_17.vrp", "Golden_18.vrp",
+            "Golden_19.vrp", "Golden_20.vrp"
+        ]
+    },
+
+    "output_path": "./analysis/"
+
+}

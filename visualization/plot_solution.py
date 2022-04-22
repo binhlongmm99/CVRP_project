@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from sqlalchemy import false
 from src.CVRP import CVRP, routeToSubroute
 import json
 import os
@@ -40,7 +39,7 @@ def plotSubroute(subroute, dfhere, color):
         totalSubroute.pop(0)
 
 
-def plotRoute(route, csv_file_path, data_instance, optimal = false):
+def plotRoute(route, csv_file_path, data_instance, optimal = False):
     subroutes = routeToSubroute(route, data_instance)
     colorslist = ["blue","green","red","cyan","magenta","yellow","black","#eeefff"]
     colorindex = 0
@@ -72,7 +71,7 @@ def plotRoute(route, csv_file_path, data_instance, optimal = false):
     csv_title = csv_file_path.split("/")[-1][:-4]
     dataset = csv_file_path.split("/")[-3]
     instance =  csv_file_path.split("/")[-2]
-    if optimal == false:
+    if optimal == False:
         print("Plotting: ", csv_title)
         filename = "./figures/solution/" + dataset + "/" + instance + "/" + csv_title + ".png"
         os.makedirs(os.path.dirname(filename), exist_ok=True)
