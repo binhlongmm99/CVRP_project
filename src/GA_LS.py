@@ -2,6 +2,7 @@ import random
 import numpy as np
 import utils
 import CVRP
+from local_search import *
 from deap import base, creator, tools
 
 class GA():
@@ -103,6 +104,20 @@ class GA():
             self.fitnesses = self.toolbox.map(self.toolbox.evaluate, self.invalid_ind)
             for ind, fit in zip(self.invalid_ind, self.fitnesses):
                 ind.fitness.values = fit
+
+            # local search
+            if count == 100:
+                for i in range(len(self.offspring)):
+                    self.offspring[i] = local_search_first_improve(self.offspring[i], self.instance)
+                    # self.offspring[i] = local_search_best_improve(self.offspring[i], self.instance)
+                    del self.offspring[i].fitness.values
+
+                # Calculating fitness for all the invalid individuals in offspring
+                # self.invalid_ind = [ind for ind in self.offspring_ls if not ind.fitness.valid]
+                self.invalid_ind = [ind for ind in self.offspring if not ind.fitness.valid]
+                self.fitnesses = self.toolbox.map(self.toolbox.evaluate, self.invalid_ind)
+                for ind, fit in zip(self.invalid_ind, self.fitnesses):
+                    ind.fitness.values = fit
 
             # Recaculate the population with newly added offsprings and parents
             # We have to select same population size
